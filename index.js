@@ -42,6 +42,7 @@ app.get ('/', (req, res) => {
     const instructors = database.collection("instructors");
     const classes = database.collection("classes");
     const users = database.collection ("user");
+    const booking = database.collection("booking");
 
 
     app.get ('/instructors', async (req, res) => {
@@ -87,7 +88,7 @@ app.post ('/users', async (req, res) => {
  })
 
 
- 
+
 
  app.get ('/users', async (req, res) => { 
 
@@ -99,7 +100,43 @@ app.post ('/users', async (req, res) => {
     res.send (result)
  })
 
+ app.post ('/myBooking', async (req, res) => {
 
+    const item = req.body
+    const result = await booking.insertOne(item)
+
+
+    res.send (result)
+
+
+    
+
+
+
+
+  })
+
+//   app.get ('/myBooking', async (req, res) => {
+
+//     const result = await booking.find().toArray()
+
+//     res.send (result)
+//    })
+app.get ('/myBooking/:email', async (req, res) => { 
+
+
+
+    const email = req.params.email
+
+
+    const result = await booking.find({email: email}).toArray()
+
+    res.send (result)
+
+
+
+
+})
 
 
 
