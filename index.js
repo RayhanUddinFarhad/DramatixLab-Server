@@ -100,6 +100,35 @@ app.post ('/users', async (req, res) => {
     res.send (result)
  })
 
+
+
+ app.patch('/users/admin/:id', async (req, res) => {
+    const id = req.params.id;
+    console.log(id);
+    const filter = { _id: new ObjectId (id) };
+    const updateDoc = {
+      $set: {
+        role: 'admin'
+      },
+    };
+
+    const result = await users.updateOne(filter, updateDoc);
+    res.send(result);
+
+  })
+
+
+  app.get('/users/admin/:email',  async (req, res) => {
+    const email = req.params.email;
+     const query = { email: email }
+    const user = await users.findOne(query);
+    const result = { admin: user?.role === 'admin' }
+    res.send(result);
+  })
+
+
+
+
  app.post ('/myBooking', async (req, res) => {
 
     const item = req.body
@@ -110,7 +139,7 @@ app.post ('/users', async (req, res) => {
 
 
 
-    
+
     const result = await booking.insertOne(item)
 
 
