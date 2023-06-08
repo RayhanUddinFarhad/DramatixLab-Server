@@ -16,7 +16,7 @@ app.get ('/', (req, res) => {
 
 
 
- const { MongoClient, ServerApiVersion } = require('mongodb');
+ const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 
 
 
@@ -36,7 +36,7 @@ app.get ('/', (req, res) => {
  async function run() {
    try {
      // Connect the client to the server	(optional starting in v4.7)
-     await client.connect();
+    //  await client.connect();
 
      const database = client.db("DramatixLab");
     const instructors = database.collection("instructors");
@@ -103,6 +103,14 @@ app.post ('/users', async (req, res) => {
  app.post ('/myBooking', async (req, res) => {
 
     const item = req.body
+
+
+
+
+
+
+
+    
     const result = await booking.insertOne(item)
 
 
@@ -137,6 +145,19 @@ app.get ('/myBooking/:email', async (req, res) => {
 
 
 })
+
+app.delete ('/myBooking/:id', async (req, res) => {
+
+
+
+    const id = req.params.id
+
+    const itemId = {_id : new ObjectId(id)}
+
+    const result = await booking.deleteOne(itemId)
+
+    res.send(result)
+ })
 
 
 
