@@ -108,31 +108,39 @@ async function run() {
          })
 
 
+         
+        app.patch ('/deny/:id', async (req, res) => {
 
-        
-        app.get('/admin/pending-classes', async (req, res) => {
-            const pendingClasses = await classes.find().toArray();
-          
-            res.send(pendingClasses);
-          });
+            const id = req.params.id;
+            const filter = { _id: new ObjectId(id) };
 
-          app.post ('/pendingClasses', async (req, res) => {
+            const updateDoc = {
+                $set: {
+                    status: 'deny'
+                },
+            };
 
-
-            const classInfo = req.body
-
-            const result = await pendingClasses.insertOne(classInfo)
-
-            res.send (result)
+            const result = await allClasses.updateOne(filter, updateDoc);
+            res.send(result);
 
 
 
 
-          })
+
+
+         })
 
 
 
 
+
+
+       app.get ('/adminClasses', async (req, res) => {
+
+
+        const result = await allClasses.find().toArray()
+        res.send(result)
+        })
 
 
         app.post('/users', async (req, res) => {
