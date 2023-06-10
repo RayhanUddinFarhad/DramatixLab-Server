@@ -446,6 +446,22 @@ async function run() {
           })
 
 
+          app.get('/paymentHistory/:email', async (req, res) => {
+            const email = req.params.email;
+          
+            const result = await payments
+              .find({ email: email })
+              .sort({ date: -1 }) // Sort by "date" field in descending order
+              .toArray();
+          
+            res.send(result);
+          });
+          
+
+
+
+
+
 
 
 
