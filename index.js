@@ -39,22 +39,22 @@ app.get('/', (req, res) => {
 
 
 
-// const verifyJWT = (req, res, next) => {
-//   const token = req.headers.authorization;
-
-//   if (!token) {
-//     return res.status(401).json({ error: true, message: 'Authorization token not found' });
-//   }
-
-//   try {
-//     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-//     req.decoded = decoded;
-//     next();
-//   } catch (error) {
-//     return res.status(403).json({ error: true, message: 'Invalid token' });
-//   }
-// };
-
+const verifyJWT = (req, res, next) => {
+    const authorization = req.headers.authorization;
+    if (!authorization) {
+      return res.status(401).send({ error: true, message: 'unauthorized access' });
+    }
+    // bearer token
+    const token = authorization.split(' ')[1];
+  
+    jwt.verify(token, process.env.SERET_JWT_TOKEN, (err, decoded) => {
+      if (err) {
+        return res.status(401).send({ error: true, message: 'unauthorized access' })
+      }
+      req.decoded = decoded;
+      next();
+    })
+  }
 
 
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
@@ -101,7 +101,12 @@ async function run() {
 
 
         })
-
+        app.post('/jwt', (req, res) => {
+            const user = req.body;
+            const token = jwt.sign(user, process.env.SERET_JWT_TOKEN, { expiresIn: '1h' })
+      
+            res.send({ token })
+          })
 
        
 
@@ -303,30 +308,24 @@ async function run() {
 
         })
 
-        app.get ('/users/student/:id', async (req, res) => { 
+        app.get ('/users/student/:email', verifyJWT, async (req, res) => { 
 
             const email = req.params.email;
 
-            const decodedEmail = req.decoded.email
-
-            if (email !== decodedEmail) { 
-
-                return res.status(403).send({ error : true, message : 'Invalid Email' })
-            }
-
+           
 
 
 
             const query = { email: email }
             const user = await users.findOne(query);
-            const result = { instructor: user?.role === 'instructor' }
+            const result = { student: user?.role === 'student' }
             res.send(result);
 
 
 
         })
 
-        app.get('/users/instructor/:email',  async (req, res) => {
+        app.get('/users/instructor/:email', verifyJWT,  async (req, res) => {
             const email = req.params.email;
 
            
@@ -340,7 +339,7 @@ async function run() {
         })
 
 
-        app.get('/users/admin/:email',   async (req, res) => {
+        app.get('/users/admin/:email', verifyJWT,   async (req, res) => {
 
 
             const email = req.params.email;
