@@ -297,6 +297,18 @@ async function run() {
         app.post('/myBooking', async (req, res) => {
 
             const item = req.body
+            // console.log(item.data._id);
+
+            // const query = { _id : new ObjectId (item.data._id)}
+
+
+            // const existingItem = await booking.findOne (query);
+
+
+            // if (existingItem) {
+
+            //     return res.status(401).send({ message : 'Item already exists'})
+            // }
 
 
 
@@ -414,6 +426,23 @@ async function run() {
 
 
 
+          })
+
+          app.get ('/myEnrolled/:email', async (req, res) => { 
+
+
+
+            const email = req.params.email
+
+            const result = await payments.find({ email: email}).toArray();
+
+            res.send (result)
+
+
+
+
+
+            
           })
 
 
