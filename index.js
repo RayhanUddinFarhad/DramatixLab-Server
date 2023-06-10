@@ -105,6 +105,15 @@ async function run() {
 
         })
 
+        app.get ('/allClasses', async (req, res) => { 
+
+
+
+            const result = await allClasses.find().toArray()
+
+            res.send (result)
+        })
+
         app.patch ('/approved/:id', async (req, res) => {
 
             const id = req.params.id;
@@ -385,7 +394,9 @@ async function run() {
 
             const body = req.body;
             console.log(body);
-            const id = body._id
+            const id = body.id
+            const itemId = body.itemId
+            const ItemQuery = {_id : new ObjectId (itemId)}
 
             const query = {_id : new ObjectId (id)}
             const result = await payments.insertOne(body);
@@ -393,9 +404,13 @@ async function run() {
 
             const deleted = await booking.deleteOne(query);
 
+            const update = await allClasses.updateOne(ItemQuery, { $inc: { availableSeats: -1 } });
+
+            
 
 
-            res.send ({result, deleted})
+
+            res.send ({result, deleted, update})
 
 
 
