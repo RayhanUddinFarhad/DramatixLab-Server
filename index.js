@@ -5,6 +5,7 @@ const port = process.env.PORT || 8000;
 app.use(express.json());
 app.use(cors())
 require("dotenv").config();
+const stripe = require("stripe") (process.env.PAYMENT_SECRET_KEY)
 
 
 
@@ -45,6 +46,7 @@ async function run() {
         const booking = database.collection("booking");
         const pendingClasses = database.collection("pendingClasses");
         const allClasses = database.collection("allClasses");
+        const payments = database.collection("payments");
 
 
         app.get('/instructors', async (req, res) => {
@@ -68,6 +70,12 @@ async function run() {
             const infoBody = req.body
 
             const result = await allClasses.insertOne(infoBody)
+
+
+
+
+
+
             res.send(result)
 
 
@@ -84,6 +92,17 @@ async function run() {
             const result = await allClasses.find({status : 'approved'}).toArray()
 
             res.send(result)
+        })
+        app.get ('/instructorClasses', async (req, res) => { 
+
+
+            const result = await allClasses.find().toArray()
+            res.send(result)
+
+
+
+
+
         })
 
         app.patch ('/approved/:id', async (req, res) => {
@@ -108,7 +127,37 @@ async function run() {
          })
 
 
-         
+
+         app.patch ('/sendFeedback/:id', async (req, res) => { 
+
+            
+            const id = req.params.id;
+            const filter = { _id: new ObjectId(id) };
+
+            const body = req.body;
+
+            const updateDoc = {
+                $set: {
+                    feedback: body.message
+                },
+            };
+
+            const result = await allClasses.updateOne(filter, updateDoc);
+
+
+            res.send(result);
+
+
+
+
+            
+
+
+
+         })
+
+
+
         app.patch ('/deny/:id', async (req, res) => {
 
             const id = req.params.id;
@@ -116,7 +165,7 @@ async function run() {
 
             const updateDoc = {
                 $set: {
-                    status: 'deny'
+                    status: 'denied'
                 },
             };
 
@@ -294,6 +343,63 @@ async function run() {
 
             res.send(result)
         })
+
+
+        app.get ('/dashboard/payment/:id', async (req, res) => { 
+
+
+
+            const id = req.params.id
+
+            const itemId = { _id: new ObjectId(id) }
+
+            const result =  await booking.findOne(itemId)
+
+            res.send (result)
+        })
+
+
+        app.post("/create-payment-intent", async (req, res) => {
+            const { price } = req.body;
+
+            const amount =  Math.round (price *100)
+          
+            // Create a PaymentIntent with the order amount and currency
+            const paymentIntent = await stripe.paymentIntents.create({
+              amount: amount,
+              currency: "usd",
+              payment_method_types: [
+                "card"
+              ]
+            });
+          
+            res.send({
+              clientSecret: paymentIntent.client_secret,
+            });
+          });
+
+          app.post ('/payments', async (req, res) => { 
+
+
+
+
+            const body = req.body;
+            console.log(body);
+            const id = body._id
+
+            const query = {_id : new ObjectId (id)}
+            const result = await payments.insertOne(body);
+
+
+            const deleted = await booking.deleteOne(query);
+
+
+
+            res.send ({result, deleted})
+
+
+
+          })
 
 
 
