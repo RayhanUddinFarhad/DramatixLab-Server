@@ -6,6 +6,28 @@ app.use(express.json());
 app.use(cors())
 require("dotenv").config();
 const stripe = require("stripe") (process.env.PAYMENT_SECRET_KEY)
+const jwt = require('jsonwebtoken');
+
+
+
+
+const authenticateToken = (req, res, next) => {
+    const token = req.headers.authorization;
+  
+    if (!token) {
+      return res.status(401).json({ message: 'No token provided' });
+    }
+  
+    jwt.verify(token, secretKey, (err, user) => {
+      if (err) {
+        return res.status(403).json({ message: 'Invalid token' });
+      }
+      req.user = user;
+      next();
+    });
+  };
+  
+
 
 
 
@@ -14,6 +36,24 @@ app.get('/', (req, res) => {
 
     res.send('Welcome to DramatixLab')
 })
+
+
+
+// const verifyJWT = (req, res, next) => {
+//   const token = req.headers.authorization;
+
+//   if (!token) {
+//     return res.status(401).json({ error: true, message: 'Authorization token not found' });
+//   }
+
+//   try {
+//     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+//     req.decoded = decoded;
+//     next();
+//   } catch (error) {
+//     return res.status(403).json({ error: true, message: 'Invalid token' });
+//   }
+// };
 
 
 
@@ -62,6 +102,8 @@ async function run() {
 
         })
 
+
+       
 
 
 
@@ -246,7 +288,7 @@ async function run() {
 
         })
 
-        app.patch('/users/instructor/:id', async (req, res) => {
+        app.patch('/users/instructor/:id',  async (req, res) => {
             const id = req.params.id;
             console.log(id);
             const filter = { _id: new ObjectId(id) };
@@ -261,8 +303,36 @@ async function run() {
 
         })
 
-        app.get('/users/instructor/:email', async (req, res) => {
+        app.get ('/users/student/:id', async (req, res) => { 
+
             const email = req.params.email;
+
+            const decodedEmail = req.decoded.email
+
+            if (email !== decodedEmail) { 
+
+                return res.status(403).send({ error : true, message : 'Invalid Email' })
+            }
+
+
+
+
+            const query = { email: email }
+            const user = await users.findOne(query);
+            const result = { instructor: user?.role === 'instructor' }
+            res.send(result);
+
+
+
+        })
+
+        app.get('/users/instructor/:email',  async (req, res) => {
+            const email = req.params.email;
+
+           
+
+
+
             const query = { email: email }
             const user = await users.findOne(query);
             const result = { instructor: user?.role === 'instructor' }
@@ -270,8 +340,12 @@ async function run() {
         })
 
 
-        app.get('/users/admin/:email', async (req, res) => {
+        app.get('/users/admin/:email',   async (req, res) => {
+
+
             const email = req.params.email;
+
+            
             const query = { email: email }
             const user = await users.findOne(query);
             const result = { admin: user?.role === 'admin' }
@@ -336,7 +410,7 @@ async function run() {
 
         //     res.send (result)
         //    })
-        app.get('/myBooking/:email', async (req, res) => {
+        app.get('/myBooking/:email',  async (req, res) => {
 
 
 
@@ -416,8 +490,9 @@ async function run() {
 
             const deleted = await booking.deleteOne(query);
 
-            const update = await allClasses.updateOne(ItemQuery, { $inc: { availableSeats: -1 } });
-
+            const update = await allClasses.updateOne(ItemQuery, {
+                $inc: { availableSeats: -1, totalEnrolled: 1 }, // Increment both fields by 1
+              });
             
 
 
@@ -456,6 +531,19 @@ async function run() {
           
             res.send(result);
           });
+
+          app.get ('/instructorClass/:email', async (req, res) => {
+
+
+
+            const email = req.params.email;
+
+            const result = await allClasses.find({ email: email}).toArray()
+
+            res.send (result)
+           })
+
+
           
 
 
