@@ -101,6 +101,16 @@ async function run() {
 
 
         })
+
+
+        app.get ('/popularInstructors', async (req, res) => { 
+
+
+
+            const result = await users.find ({role : 'instructor'}).toArray();
+
+            res.send(result)
+        })
         app.post('/jwt', (req, res) => {
             const user = req.body;
             const token = jwt.sign(user, process.env.SERET_JWT_TOKEN, { expiresIn: '1h' })
@@ -108,6 +118,15 @@ async function run() {
             res.send({ token })
           })
 
+        //   const verifyAdmin = async (req, res, next) => {
+        //     const email = req.decoded.email;
+        //     const query = { email: email }
+        //     const user = await users.findOne(query);
+        //     if (user?.role !== 'admin') {
+        //       return res.status(403).send({ error: true, message: 'forbidden message' });
+        //     }
+        //     next();
+        //   }
        
 
 
@@ -140,6 +159,20 @@ async function run() {
 
             res.send(result)
         })
+
+
+        app.get ('/popularClasses', async (req, res) => {
+
+
+
+            const result = await allClasses.find ({status : 'approved'}).sort ({totalEnrolled : -1}).toArray()
+
+            res.send(result)
+         })
+
+
+
+
         app.get ('/instructorClasses', async (req, res) => { 
 
 
@@ -151,6 +184,9 @@ async function run() {
 
 
         })
+
+
+        
 
         app.get ('/allClasses', async (req, res) => { 
 
@@ -240,7 +276,7 @@ async function run() {
 
 
 
-       app.get ('/adminClasses', async (req, res) => {
+       app.get ('/adminClasses',  async (req, res) => {
 
 
         const result = await allClasses.find().toArray()
@@ -266,7 +302,7 @@ async function run() {
 
 
 
-        app.get('/users', async (req, res) => {
+        app.get('/users',  async (req, res) => {
 
 
 
