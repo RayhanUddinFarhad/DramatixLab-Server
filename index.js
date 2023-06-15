@@ -314,6 +314,50 @@ async function run() {
 
 
 
+        app.get ('/users/:email', async (req, res) => { 
+
+
+
+            const email = req.params.email
+
+            const result = await users.findOne({email : email})
+
+            res.send (result)
+        })
+
+
+
+        app.put('/users/:email', async (req, res) => {
+            try {
+              const email = req.params.email;
+              const body = req.body;
+              console.log(body);
+          
+              const filter = { email: email };
+          
+              const updateDoc = {
+                $set: {
+                  name: body.name,
+                  image: body.image,
+                  PhoneNumber: body.phoneNumber,
+                  Address: body.address,
+                  Gender: body.gender,
+                },
+              };
+              console.log(updateDoc);
+          
+              const result = await users.updateOne(filter, updateDoc, { upsert: true });
+          
+              res.send(result);
+            } catch (error) {
+              console.error(error);
+              res.status(500).send('Internal Server Error');
+            }
+          });
+          
+
+
+
         app.patch('/users/admin/:id', async (req, res) => {
             const id = req.params.id;
             console.log(id);
@@ -598,19 +642,6 @@ async function run() {
     }
 }
 run().catch(console.dir);
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
